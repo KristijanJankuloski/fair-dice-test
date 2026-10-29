@@ -17,7 +17,7 @@ export function faceStatistics(rolls: number[], sides: DiceType): FaceStatistics
   const counts = countFaces(rolls, sides);
   const n = rolls.length;
   const expected = expectedPercentage(sides);
-  return counts.map((count, i) => {
+  const stats = counts.map((count, i) => {
     if (n === 0) {
       return {
         face: i + 1,
@@ -40,6 +40,13 @@ export function faceStatistics(rolls: number[], sides: DiceType): FaceStatistics
       confidenceInterval95: wilsonInterval(count, n),
     };
   });
+  return sides === 10 ? d10Labels(stats) : stats;
+}
+
+/** A D10 is physically labelled 0-9: show the stored face 10 as "0", listed first. */
+function d10Labels(stats: FaceStatistics[]): FaceStatistics[] {
+  const ten = stats[stats.length - 1];
+  return [{ ...ten, face: 0 }, ...stats.slice(0, -1)];
 }
 
 export function fairnessResult(

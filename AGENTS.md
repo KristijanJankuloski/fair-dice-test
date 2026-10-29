@@ -24,6 +24,7 @@ Run `npm test` and `npm run build` before declaring work done.
 ## Hard rules
 - **Statistics wording:** never say a die is "proven fair" or that p is the probability of bias. Never show 1 − p as confidence of bias. Live p-values are labelled exploratory. If N/S < 5, show "not enough data", not a p-value.
 - No placeholder or example stats shown as real results; empty session shows an empty state. No NaN/Infinity ever reaches the UI.
+- D10 is labelled 0-9 in the UI (0 listed first). Input accepts 0-9 only (10 is rejected); internally the 0 face is stored as 10. Other dice reject 0.
 - Invalid input (blank, decimal, negative, non-numeric, out of 1..S) must not change data. Input clears and stays focused after every submit attempt. Numpad and top-row digits both work; Enter and numpad Enter each submit exactly once.
 - Switching die requires a confirm dialog; confirming discards the session.
 - Timestamps never affect statistics.
