@@ -69,6 +69,13 @@ describe('roll entry', () => {
   });
 });
 
+describe('insufficient-data message', () => {
+  it('gives the minimum and the realistic roll counts', () => {
+    render(<App />);
+    expect(screen.getByText(/at least 30 rolls, but realistically closer to 120 rolls for a D6 \(an average of 5 per face\)/)).toBeInTheDocument();
+  });
+});
+
 describe('D10 zero face', () => {
   it('D10 faces are labelled 0-9 and typing 0 records the 0 face', async () => {
     const user = userEvent.setup();
