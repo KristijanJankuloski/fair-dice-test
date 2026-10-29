@@ -10,8 +10,10 @@ describe('parseRoll', () => {
   it.each(DICE_TYPES.filter((s) => s !== 10))('D%i rejects 0', (s) => {
     expect(parseRoll('0', s).ok).toBe(false);
   });
-  it('D10 treats 0 as 10 (0-9 numbered dice)', () => {
+  it('D10 is numbered 0-9: 0 is stored as face 10, and typing 10 is accepted as the same face', () => {
     expect(parseRoll('0', 10)).toEqual({ ok: true, value: 10 });
+    expect(parseRoll('10', 10)).toEqual({ ok: true, value: 10 });
+    expect(parseRoll('abc', 10)).toEqual({ ok: false, message: 'Enter a number from 0 to 9' });
     expect(parseRoll('00', 10).ok).toBe(false);
     expect(parseRoll('11', 10).ok).toBe(false);
   });

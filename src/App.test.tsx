@@ -70,14 +70,17 @@ describe('roll entry', () => {
 });
 
 describe('D10 zero face', () => {
-  it('typing 0 on a D10 records a 10', async () => {
+  it('D10 faces are labelled 0-9 and typing 0 records the 0 face', async () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole('radio', { name: 'D10' }));
     await user.type(box(), '0{Enter}');
     expect(total()).toBe('1');
-    const row = screen.getByRole('rowheader', { name: '10' }).closest('tr')!;
-    expect(row).toHaveTextContent(/^10\s*1/);
+    expect(screen.queryByRole('rowheader', { name: '10' })).toBeNull();
+    const faces = screen.getAllByRole('rowheader').map((h) => h.textContent);
+    expect(faces).toEqual(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
+    const row = screen.getByRole('rowheader', { name: '0' }).closest('tr')!;
+    expect(row).toHaveTextContent(/^0\s*1/);
   });
 });
 
