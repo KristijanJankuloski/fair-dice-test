@@ -34,3 +34,8 @@ Run `npm test` and `npm run build` before declaring work done.
 ## Conventions
 - TypeScript strict. Small, named components. Tailwind utilities, dark-first. Visible focus states; color is never the only status cue.
 - Vite `base` must match the GH Pages repo path.
+
+## Workflow
+- Never commit to `master`. Work on a feature branch (`feat/…`, `fix/…`, `docs/…`) and open a PR. Merging to `master` triggers the GitHub Pages deploy.
+- Local Node may be 18 (Vite 5, Vitest 2, jsdom 24, Tailwind 3 are pinned for that). CI uses Node 20. Don't bump to tooling that needs Node 20+ without checking.
+- Recharts 3: `ErrorBar` has its own animation and renders invisible (scaleY(0)) unless `isAnimationActive={false}` is set on it.
