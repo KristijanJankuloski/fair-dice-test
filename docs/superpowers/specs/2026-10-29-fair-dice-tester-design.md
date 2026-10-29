@@ -36,6 +36,7 @@ Source material: `dice-fairness-tester-spec.md` (Kristijan's long spec). This do
 - **Per-face:** intervals and drift only; no per-face "significant" labels, so Holm correction is unnecessary.
 - **p-value computation:** implement regularized upper incomplete gamma in-house (no stats dependency); verify against known reference values in tests.
 - **Input handling:** a single text input with `inputmode="numeric"`; validate on Enter; accept only integers in 1..S; reject everything else without changing data; clear and keep focus after success and after errors; guard against double-submit on key repeat (ignore `event.repeat`). Multi-digit values (e.g. 12, 20) are typed then confirmed with Enter — no auto-submit.
+- **D10:** physical D10s are numbered 0–9 with 0 meaning 10, so typing `0` on a D10 records 10 (user request, post-v1). Other dice still reject 0.
 - **Face table** (count, observed %, expected %, drift in pp, relative deviation, 95% interval) kept below the chart; recent-rolls strip shows last 10.
 - **Layout:** dark-first, input and total count are the most prominent elements; chart scrolls horizontally on narrow screens for D20.
 - **Hosting path:** Vite `base` set to the repo name for GH Pages.

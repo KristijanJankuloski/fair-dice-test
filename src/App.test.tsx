@@ -69,6 +69,18 @@ describe('roll entry', () => {
   });
 });
 
+describe('D10 zero face', () => {
+  it('typing 0 on a D10 records a 10', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('radio', { name: 'D10' }));
+    await user.type(box(), '0{Enter}');
+    expect(total()).toBe('1');
+    const row = screen.getByRole('rowheader', { name: '10' }).closest('tr')!;
+    expect(row).toHaveTextContent(/^10\s*1/);
+  });
+});
+
 describe('switching dice', () => {
   it('switches without a prompt when there is no data', async () => {
     const user = userEvent.setup();
