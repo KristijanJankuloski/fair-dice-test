@@ -1,10 +1,16 @@
 import type { FairnessResult } from '../types/dice';
+import { MIN_EXPECTED_COUNT } from '../services/statistics';
+
+// Practical sample size per face: the chi-square test is only *valid* at 5 per face,
+// but it has little power to catch a modest bias that early.
+const REALISTIC_ROLLS_PER_FACE = 20;
 
 const fmtP = (p: number) => (p < 0.001 ? 'p < 0.001' : `p = ${p.toFixed(3)}`);
 
 export function FairnessAssessment({ result, sides }: { result: FairnessResult; sides: number }) {
   const { assessment, pValue, chiSquare, significanceLevel, totalRolls } = result;
-  const needed = sides * 5;
+  const needed = sides * MIN_EXPECTED_COUNT;
+  const realistic = sides * REALISTIC_ROLLS_PER_FACE;
 
   let title: string;
   let body: string;
@@ -12,7 +18,7 @@ export function FairnessAssessment({ result, sides }: { result: FairnessResult; 
   let marker: string;
   if (assessment === 'insufficient-data') {
     title = 'Not enough data yet';
-    body = `Keep rolling. A reliable assessment needs at least ${needed} rolls for a D${sides} (an average of 5 per face).`;
+    body = `Keep rolling. A reliable assessment needs at least ${needed} rolls, but realistically closer to ${realistic} rolls for a D${sides} (an average of ${MIN_EXPECTED_COUNT} per face).`;
     tone = 'border-slate-600 bg-slate-800/50';
     marker = '…';
   } else if (assessment === 'consistent-with-fairness') {
