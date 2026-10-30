@@ -6,9 +6,9 @@ What is verified and what is not. Source for the verified rules: Wikipedia, "Dic
 |-----|----------|--------------|
 | D4 | Result is the vertex pointing up; no opposite faces | — |
 | D6 | Opposite faces sum to 7; Western dice are right-handed (1, 2, 3 run counter-clockwise around a vertex) | Left-handed dice exist (e.g. many Chinese dice); use the editor |
-| D8 | Opposite faces usually sum to 9 | Which faces touch |
-| D10 | Numbered 0–9; opposite faces sum to 9 | Which faces touch |
-| D12 | Opposite faces usually sum to 13 | Which faces touch |
+| D8 | Opposite faces usually sum to 9. **Full layout as described by the user's D8**, see below | Other makers' D8s may differ; use the editor |
+| D10 | Numbered 0–9; opposite faces sum to 9. **Full layout copied from the user's blue D10**, see below | Other makers' D10s may differ; use the editor |
+| D12 | Opposite faces usually sum to 13. **Full layout copied from the user's blue D12**, see below | Other makers' D12s may differ; use the editor |
 | D20 | Opposite faces sum to 21. **Full layout copied from the user's blue D20** (gold numbers), see below | Other makers' D20s may differ; use the editor |
 
 For D8, D10, D12 and D20 the default layout (`defaultLayout` in `src/services/die/layout.ts`) only honours the opposite-pair rule; the remaining arrangement is deterministic but arbitrary. The UI says "Default layout — edit to match your die" for these. If you find an authoritative common layout, encode it in `defaultLayout` and flip `ADJACENCY_VERIFIED`.
@@ -22,3 +22,30 @@ Nine photos of one blue D20 gave these directly readable facts: 20 touches 2, 14
 One glyph was initially read as 9 (face 16's neighbour) and made the search impossible; the dotted glyph is a 6 (dots mark 6 and 9), and with 6 the solution is unique.
 
 The user has two D20 sets that differ; this is one of them. The editor covers the other.
+
+## D10: read from photos
+
+Three photos of one blue D10 (gold numbers). Looking down on each pointed apex from outside, clockwise:
+
+- evens: 2, 6, 4, 0, 8
+- odds: 1, 9, 5, 3, 7
+
+Evens sit around one apex and odds around the other, and opposite faces sum to 9 (0-9, 2-7, 4-5, 6-3, 8-1), which is consistent with both rings. The odd ring was read from a separate photo; the one implied by the even ring plus the opposite-sum rule matches it, so the handedness is cross-checked, not assumed. The dotted glyphs are 6 and 9 (one of each, one per cone). The layout is stored as `D10_BY_SLOT` in `src/services/die/layout.ts` and tested against the geometry.
+
+Side photo check (not used to build the layout): in the resting photo 0 sits among 8, 3 and 7, and 3 touches 8 and 7. In the layout 0 touches 8, 3, 7, 4 and 3 touches 7, 0, 8, 5, which agrees.
+
+## D12: reconstructed from photos
+
+Seven photos of one blue D12 (gold numbers) show eleven corners where three faces meet, with the winding (clockwise from outside) readable at each. Some glyphs are ambiguous in photos: 1 vs 7 when rotated, and 6 vs 9 (dotted, and rotated so the dot can sit left or above). Instead of guessing, each ambiguous glyph was left as a *set* ({1, 7} or {6, 9}) and an exhaustive search over every labelling with opposite faces summing to 13 (46,080) tested all combinations. Result: **exactly one** labelling (60 raw solutions = its 60 rotations, one handedness). It is also stable under dropping any single photographed corner, so the facts are heavily redundant, not just barely enough. The search resolved the ambiguous glyphs as: three faces read as "1" in c1/c2/c3, "7" in c4/c7, 6 at two corners and 9 at two corners.
+
+The mirrored winding (all clockwise readings reversed) yields the mirror-image layout, so the chirality rests on reading "clockwise as seen from outside" correctly. It was read the same way on all eleven corners, and they are mutually consistent, which a single systematic mistake would not break, so one global flip (mirror) is the remaining risk. If the 3D die looks mirrored against your real die, swap two numbers or tell me.
+
+Stored as `D12_CLOCKWISE` in `src/services/die/layout.ts` and tested against the geometry (every face's clockwise neighbours, plus the photographed corners).
+
+Handy property of this die: 1 touches 2-6 and 12 touches 7-11 (the classic "polar" arrangement).
+
+## D8: described by the owner (not from photos)
+
+Described in text: around one apex the faces read 1, 7, 5, 3 clockwise; around the other apex 8, 6, 4, 2 clockwise; 8 touches 6, 2 and 5; 1 touches 4, 7 and 3. The layout is built from the top ring plus the "across the equator" facts only (`D8_TOP_RING_CLOCKWISE`, `D8_ACROSS_EQUATOR`), and the bottom ring is then *derived* from the geometry. A test confirms the derived bottom ring reads 8, 6, 4, 2 clockwise from outside, and that opposite faces sum to 9 (1-8, 7-2, 5-4, 3-6). So the description is internally consistent only if "clockwise" means clockwise looking at that apex from outside on both rings, which is how it was applied. An octahedron has so few arrangements that a consistent description pins the layout down (up to rotation) except for mirror-image, which the clockwise reading fixes.
+
+Every die now has an owner-supplied default. Different makers number D8–D20 differently, so the editor stays.
