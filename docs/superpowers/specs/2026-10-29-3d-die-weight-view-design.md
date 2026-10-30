@@ -25,6 +25,7 @@ After rolling, the user wants to *see* where on the physical die the problem mig
 1. 3D die, rotatable (chosen over opposite-pair bars and an unfolded net).
 2. Sits below the last-10-rolls row.
 3. Use the most common layout per die as default, but faces are editable (two physical sets differ).
+4. Edited layouts are not saved between visits (for now).
 
 ## Builder's calls (flag on review)
 - **Weight direction maths.** A heavy side tends to land down, so the face pointing up is on the opposite side. Let `d_i = O_i − E` for outcome `i` and `n_i` the unit direction that outcome `i` points when it is the result (the face normal; for a D4, the direction of the vertex that points up). The estimated weight direction is `w = −Σ d_i · n_i`, drawn from the die centre. Arrow length is scaled by `|w|` and capped; only the direction is meaningful, so the label never quotes a magnitude. For a D6 this reduces to "weight sits opposite the over-represented face".
@@ -37,8 +38,8 @@ After rolling, the user wants to *see* where on the physical die the problem mig
 - **Layout state lives in memory only**, like the session (see open question below).
 - **Accessibility/fallback:** if WebGL is unavailable, show a text list of the most over- and under-represented faces instead.
 
-## Open question for the user
-Should edited layouts be **remembered between visits** (localStorage, per die type)? v1 has no persistence by design; layouts are the one thing that is annoying to redo. Default assumption if unanswered: **no persistence**, matching v1.
+## Persistence (decided)
+No saving for now: edited layouts live in memory and reset when the page is closed or the die is switched, matching v1. Remembering layouts (localStorage, per die type) is a possible later addition.
 
 ## Testing
 - Pure module `src/services/weightDirection.ts` (no three.js import): unit tests for `w` on D6 with a single over-represented face (arrow opposite it), balanced data (zero vector), D4 vertex convention, and invariance when all counts are shifted equally.
