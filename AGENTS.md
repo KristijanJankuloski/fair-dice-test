@@ -21,6 +21,14 @@ Run `npm test` and `npm run build` before declaring work done.
 - `src/components/` — UI; `src/hooks/` — session state; `src/utils/validation.ts` — roll input validation.
 - Keep the stats engine independent of React so it stays testable.
 
+## 3D die view
+- `src/services/die/` is pure TypeScript (geometry, layouts, weight direction, colours) with tests; keep three.js out of it. Only `src/components/Die3D.tsx` imports three.js, and it is loaded with `React.lazy` once the section scrolls into view. Don't import it statically.
+- A "slot" is a position that carries a number (a face; for the D4, a vertex). `layout[slot]` is the printed number; layouts must stay permutations (swap, never overwrite). D10 labels are 0-9.
+- Weight arrow: `w = −Σ (count − expected) · direction_of_slot`. It is shown only with enough data AND "evidence of deviation", and is always labelled an estimate. Don't loosen this.
+- Layouts for D8-D20 are not verified beyond opposite-pair sums; see `docs/dice-layouts.md` and keep the "default layout" notice for those.
+- Layouts are not persisted (decided); they reset when the die changes.
+- Headless Chromium on this box needs an ALSA stub and `--use-gl=swiftshader --enable-unsafe-swiftshader` to render WebGL for screenshots.
+
 ## Hard rules
 - **Statistics wording:** never say a die is "proven fair" or that p is the probability of bias. Never show 1 − p as confidence of bias. Live p-values are labelled exploratory. If N/S < 5, show "not enough data", not a p-value.
 - No placeholder or example stats shown as real results; empty session shows an empty state. No NaN/Infinity ever reaches the UI.
