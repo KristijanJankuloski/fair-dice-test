@@ -32,9 +32,12 @@ describe('DieViewSection', () => {
     expect(screen.getByText(/standard d6 layout/i)).toBeInTheDocument();
   });
 
-  it('says the D20 default was copied from a real die', () => {
-    setup(20, []);
+  it('says the D20 and D10 defaults were copied from real dice', () => {
+    const { unmount } = setup(20, []);
     expect(screen.getByText(/default layout copied from a real d20/i)).toBeInTheDocument();
+    unmount();
+    setup(10, []);
+    expect(screen.getByText(/default layout copied from a real d10/i)).toBeInTheDocument();
   });
 
   it('swapping two numbers marks the layout as edited, and reset restores it', async () => {
