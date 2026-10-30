@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DieViewSection } from './components/DieViewSection';
 import { DiceSelector } from './components/DiceSelector';
 import { DistributionChart } from './components/DistributionChart';
 import { FaceStatisticsTable } from './components/FaceStatisticsTable';
@@ -59,6 +60,8 @@ export default function App() {
       </section>
 
       <RollHistory rolls={s.rolls} />
+
+      <DieViewSection key={s.diceType} sides={s.diceType} faces={s.faces} fairness={s.fairness} />
 
       <section className="rounded-xl border border-slate-800 p-4">
         <FaceStatisticsTable faces={s.faces} />
