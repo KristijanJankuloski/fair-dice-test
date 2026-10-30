@@ -3,7 +3,7 @@ import { DICE_TYPES, type DiceType, type FairnessResult } from '../../types/dice
 import { fairnessResult } from '../statistics';
 import { deviationColor, NEUTRAL_HEX } from './colors';
 import { getDieGeometry, oppositeSlot } from './geometry';
-import { defaultLayout, dieLabels, handedness, isValidLayout, oppositePairsHold, swapLabels } from './layout';
+import { D20_CLOCKWISE, defaultLayout, dieLabels, handedness, isValidLayout, neighbourSlotsCCW, oppositePairsHold, swapLabels } from './layout';
 import { estimateWeight, shouldShowArrow } from './weightDirection';
 import { dot, length, sub } from './vec';
 
@@ -181,5 +181,33 @@ describe('colours', () => {
     expect(deviationColor(-3)).toBe('#3b82f6');
     expect(deviationColor(0.5)).toBe('#f97316');
     expect(deviationColor(9)).toBe('#f97316');
+  });
+});
+
+describe('D20 layout copied from a real die', () => {
+  const layout = defaultLayout(20);
+  const g = getDieGeometry(20);
+  const slotOf = (label: number) => layout.indexOf(label);
+
+  it('is a valid permutation with opposite faces summing to 21', () => {
+    expect(isValidLayout(20, layout)).toBe(true);
+    expect(oppositePairsHold(20, layout)).toBe(true);
+  });
+
+  it.each(Array.from({ length: 20 }, (_, i) => i + 1))('face %i has the photographed clockwise neighbours', (label) => {
+    const ccw = neighbourSlotsCCW(g, slotOf(label)).map((s) => layout[s]);
+    const cw = [...ccw].reverse();
+    const want = D20_CLOCKWISE[label];
+    // equal as cyclic sequences
+    const rotations = [0, 1, 2].map((k) => [cw[k % 3], cw[(k + 1) % 3], cw[(k + 2) % 3]]);
+    expect(rotations).toContainEqual(want);
+  });
+
+  it('matches facts read directly from the photos', () => {
+    const near = (a: number, b: number) => neighbourSlotsCCW(g, slotOf(a)).includes(slotOf(b));
+    expect([2, 14, 8].every((n) => near(20, n))).toBe(true); // photo of the 20 face
+    expect([19, 7, 13].every((n) => near(1, n))).toBe(true);
+    expect([12, 8, 17].every((n) => near(10, n))).toBe(true);
+    expect([8, 6, 3].every((n) => near(16, n))).toBe(true);
   });
 });
