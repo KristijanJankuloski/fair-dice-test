@@ -13,9 +13,13 @@ export function countFaces(rolls: number[], sides: DiceType): number[] {
   return counts;
 }
 
+/** Per-face counts indexed by stored value − 1 (the D10's 0 face is stored as 10, index 9). */
 export function faceStatistics(rolls: number[], sides: DiceType): FaceStatistics[] {
-  const counts = countFaces(rolls, sides);
-  const n = rolls.length;
+  return faceStatisticsFromCounts(countFaces(rolls, sides), sides);
+}
+
+export function faceStatisticsFromCounts(counts: number[], sides: DiceType): FaceStatistics[] {
+  const n = counts.reduce((a, b) => a + b, 0);
   const expected = expectedPercentage(sides);
   const stats = counts.map((count, i) => {
     if (n === 0) {
@@ -54,13 +58,21 @@ export function fairnessResult(
   sides: DiceType,
   alpha: number = SIGNIFICANCE_LEVEL,
 ): FairnessResult {
-  const n = rolls.length;
+  return fairnessResultFromCounts(countFaces(rolls, sides), sides, alpha);
+}
+
+export function fairnessResultFromCounts(
+  counts: number[],
+  sides: DiceType,
+  alpha: number = SIGNIFICANCE_LEVEL,
+): FairnessResult {
+  const n = counts.reduce((a, b) => a + b, 0);
   const df = sides - 1;
   const base = { totalRolls: n, degreesOfFreedom: df, significanceLevel: alpha };
   if (n / sides < MIN_EXPECTED_COUNT) {
     return { ...base, chiSquare: null, pValue: null, assessment: 'insufficient-data' };
   }
-  const chi = chiSquareStatistic(countFaces(rolls, sides));
+  const chi = chiSquareStatistic(counts);
   const p = chiSquarePValue(chi, df);
   return {
     ...base,
@@ -69,3 +81,7 @@ export function fairnessResult(
     assessment: p < alpha ? 'evidence-of-deviation' : 'consistent-with-fairness',
   };
 }
+
+/** Index into a counts array for a printed label (D10: label 0 → index 9). */
+export const countIndexForLabel = (label: number, sides: DiceType): number =>
+  sides === 10 && label === 0 ? 9 : label - 1;

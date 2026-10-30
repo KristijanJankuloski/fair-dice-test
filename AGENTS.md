@@ -21,6 +21,11 @@ Run `npm test` and `npm run build` before declaring work done.
 - `src/components/` — UI; `src/hooks/` — session state; `src/utils/validation.ts` — roll input validation.
 - Keep the stats engine independent of React so it stays testable.
 
+## Resume from counts
+- The session is `baseline` (counts typed into the Resume dialog; unordered) plus `rolls` (ordered live rolls). All statistics, the chart and the die use `baseline + rolls` via `faceStatisticsFromCounts` / `fairnessResultFromCounts`. Undo and the last-10 strip only touch `rolls`.
+- Resume is only enabled while the session is empty (total 0); once any count exists it is disabled. Switching die clears the baseline too.
+- Counts arrays are indexed by stored value − 1 (the D10's printed 0 is stored as 10, index 9); use `countIndexForLabel`.
+
 ## 3D die view
 - `src/services/die/` is pure TypeScript (geometry, layouts, weight direction, colours) with tests; keep three.js out of it. Only `src/components/Die3D.tsx` imports three.js, and it is loaded with `React.lazy` once the section scrolls into view. Don't import it statically.
 - A "slot" is a position that carries a number (a face; for the D4, a vertex). `layout[slot]` is the printed number; layouts must stay permutations (swap, never overwrite). D10 labels are 0-9.

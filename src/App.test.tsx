@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it } from 'vitest';
 import App from './App';
@@ -66,6 +66,83 @@ describe('roll entry', () => {
     await user.click(screen.getByRole('button', { name: /undo/i }));
     expect(total()).toBe('1');
     expect(box()).toHaveFocus();
+  });
+});
+
+describe('resume from counts', () => {
+  const fill = async (user: ReturnType<typeof userEvent.setup>, counts: Record<number, string>) => {
+    for (const [face, n] of Object.entries(counts)) await user.type(screen.getByLabelText(`Face ${face}`), n);
+  };
+
+  it('adds the entered counts to the session, then new rolls build on them', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Resume' }));
+    await fill(user, { 1: '10', 2: '10', 3: '10', 4: '10', 5: '10', 6: '10' });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(total()).toBe('60');
+    expect(screen.getByText(/includes 60 rolls entered manually/i)).toBeInTheDocument();
+    expect(box()).toHaveFocus();
+    await user.type(box(), '6{Enter}');
+    expect(total()).toBe('61');
+  });
+
+  it('is disabled once a count has started, and after resuming', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeEnabled();
+    await user.type(box(), '3{Enter}');
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeDisabled();
+  });
+
+  it('Undo only removes live rolls, never the starting counts', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Resume' }));
+    await fill(user, { 2: '40' });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(screen.getByRole('button', { name: /undo/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeDisabled();
+    await user.type(box(), '1{Enter}');
+    await user.click(screen.getByRole('button', { name: /undo/i }));
+    expect(total()).toBe('40');
+  });
+
+  it('rejects bad input inside the dialog without changing the session', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Resume' }));
+    await fill(user, { 1: '-3' });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(within(screen.getByRole('dialog')).getByRole('alert')).toHaveTextContent(/whole number/i);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(total()).toBe('0');
+    expect(screen.getByRole('button', { name: 'Resume' })).toBeEnabled();
+    expect(box()).toHaveFocus();
+  });
+
+  it('switching dice after resuming discards the starting counts', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Resume' }));
+    await fill(user, { 1: '5' });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('radio', { name: 'D8' }));
+    await user.click(screen.getByRole('button', { name: /discard and switch/i }));
+    expect(total()).toBe('0');
+    expect(screen.queryByText(/entered manually/i)).toBeNull();
+  });
+
+  it('D10 dialog has faces 0-9', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('radio', { name: 'D10' }));
+    await user.click(screen.getByRole('button', { name: 'Resume' }));
+    await fill(user, { 0: '4' });
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(total()).toBe('4');
+    const row = screen.getByRole('rowheader', { name: '0' }).closest('tr')!;
+    expect(row).toHaveTextContent(/^0\s*4/);
   });
 });
 
