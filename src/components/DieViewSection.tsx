@@ -3,7 +3,7 @@ import { RotateCcw } from 'lucide-react';
 import type { DiceType, FaceStatistics, FairnessResult } from '../types/dice';
 import { deviationColor, NEUTRAL_HEX } from '../services/die/colors';
 import { getDieGeometry } from '../services/die/geometry';
-import { ADJACENCY_VERIFIED, defaultLayout, dieLabels, oppositePairsHold, oppositeSum, swapLabels } from '../services/die/layout';
+import { ADJACENCY_VERIFIED, LAYOUT_SOURCE, defaultLayout, dieLabels, oppositePairsHold, oppositeSum, swapLabels } from '../services/die/layout';
 import { estimateWeight, hasEnoughDataToColour, shouldShowArrow } from '../services/die/weightDirection';
 
 // three.js lives in its own chunk, fetched only once this section is on screen.
@@ -146,7 +146,9 @@ export function DieViewSection({ sides, faces, fairness }: Props) {
             ? 'Edited layout — matches the numbering you set.'
             : ADJACENCY_VERIFIED[sides]
               ? `Standard D${sides} layout.`
-              : 'Default layout — edit to match your die. Opposite faces are right, but which numbers touch varies between dice makers.'}
+              : LAYOUT_SOURCE[sides]
+                ? `Default layout copied from ${LAYOUT_SOURCE[sides]}. Edit it if your die is numbered differently.`
+                : 'Default layout — edit to match your die. Opposite faces are right, but which numbers touch varies between dice makers.'}
           {sum !== null && !pairsOk && ` Note: opposite faces no longer sum to ${sum}.`}
         </p>
         <div className="mt-2 flex flex-wrap items-end gap-2">

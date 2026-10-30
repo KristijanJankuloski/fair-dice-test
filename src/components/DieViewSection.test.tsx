@@ -25,11 +25,16 @@ describe('DieViewSection', () => {
   });
 
   it('flags the default layout on dice whose neighbours are unverified, not on the D6', () => {
-    const { unmount } = setup(20, []);
+    const { unmount } = setup(12, []);
     expect(screen.getByText(/default layout — edit to match your die/i)).toBeInTheDocument();
     unmount();
     setup(6, []);
     expect(screen.getByText(/standard d6 layout/i)).toBeInTheDocument();
+  });
+
+  it('says the D20 default was copied from a real die', () => {
+    setup(20, []);
+    expect(screen.getByText(/default layout copied from a real d20/i)).toBeInTheDocument();
   });
 
   it('swapping two numbers marks the layout as edited, and reset restores it', async () => {
@@ -41,7 +46,7 @@ describe('DieViewSection', () => {
     expect(screen.getByText(/edited layout/i)).toBeInTheDocument();
     expect(screen.getByText(/opposite faces no longer sum to 21/i)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /reset layout/i }));
-    expect(screen.getByText(/default layout — edit to match/i)).toBeInTheDocument();
+    expect(screen.getByText(/default layout copied from a real d20/i)).toBeInTheDocument();
   });
 
   it('D10 offers numbers 0-9', () => {
