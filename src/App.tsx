@@ -4,6 +4,7 @@ import { DiceSelector } from './components/DiceSelector';
 import { DistributionChart } from './components/DistributionChart';
 import { FaceStatisticsTable } from './components/FaceStatisticsTable';
 import { FairnessAssessment } from './components/FairnessAssessment';
+import { ResumeDialog } from './components/ResumeDialog';
 import { RollHistory } from './components/RollHistory';
 import { RollInput } from './components/RollInput';
 import { useDiceSession } from './hooks/useDiceSession';
@@ -11,7 +12,8 @@ import { useDiceSession } from './hooks/useDiceSession';
 export default function App() {
   const s = useDiceSession(6);
   const [focusSignal, setFocusSignal] = useState(0);
-  const total = s.rolls.length;
+  const total = s.total;
+  const [resuming, setResuming] = useState(false);
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-8">
@@ -37,7 +39,7 @@ export default function App() {
 
       <RollInput
         sides={s.diceType}
-        canUndo={total > 0}
+        canUndo={s.rolls.length > 0}
         onRoll={s.addRoll}
         onUndo={s.undo}
         focusSignal={focusSignal}
@@ -65,7 +67,41 @@ export default function App() {
 
       <section className="rounded-xl border border-slate-800 p-4">
         <FaceStatisticsTable faces={s.faces} />
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-800 pt-3">
+          <button
+            type="button"
+            onClick={() => setResuming(true)}
+            disabled={total > 0}
+            className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Resume
+          </button>
+          <p className="text-xs text-slate-400">
+            {total > 0
+              ? 'Resume is only available before a count has started.'
+              : 'Already rolled some? Enter how many times each face has come up so far, then keep going.'}
+          </p>
+        </div>
+        {s.manualTotal > 0 && (
+          <p className="mt-2 text-xs text-slate-400">
+            Includes {s.manualTotal} rolls entered manually as starting counts (no order, so they can't be undone).
+          </p>
+        )}
       </section>
+      {resuming && (
+        <ResumeDialog
+          sides={s.diceType}
+          onClose={() => {
+            setResuming(false);
+            setFocusSignal((n) => n + 1);
+          }}
+          onSave={(counts) => {
+            s.resume(counts);
+            setResuming(false);
+            setFocusSignal((n) => n + 1);
+          }}
+        />
+      )}
     </main>
   );
 }

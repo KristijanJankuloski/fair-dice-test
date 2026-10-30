@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { chiSquarePValue, chiSquareStatistic } from './chiSquare';
 import { wilsonInterval } from './confidenceIntervals';
-import { countFaces, expectedPercentage, faceStatistics, fairnessResult } from './statistics';
+import { countFaces, countIndexForLabel, expectedPercentage, faceStatistics, faceStatisticsFromCounts, fairnessResult, fairnessResultFromCounts } from './statistics';
 import { DICE_TYPES } from '../types/dice';
 
 const balanced = (sides: number, perFace: number) =>
@@ -104,5 +104,23 @@ describe('fairness result', () => {
   it('flags a heavily skewed sample', () => {
     const rolls = [...Array(60).fill(6), ...balanced(6, 2)];
     expect(fairnessResult(rolls, 6).assessment).toBe('evidence-of-deviation');
+  });
+});
+
+describe('counts-based statistics (Resume)', () => {
+  it('matches the rolls-based result for the same data', () => {
+    const rolls = [1, 1, 2, 3, 3, 3, 4, 5, 6, 6, 6, 6, 6, 2, 4, 1, 5, 3, 2, 6, 6, 1, 4, 5, 3, 2, 2, 6, 5, 4];
+    expect(faceStatisticsFromCounts(countFaces(rolls, 6), 6)).toEqual(faceStatistics(rolls, 6));
+    expect(fairnessResultFromCounts(countFaces(rolls, 6), 6)).toEqual(fairnessResult(rolls, 6));
+  });
+  it('totals come from the counts, so 17 + 13 on a D6 is 30 rolls', () => {
+    const r = fairnessResultFromCounts([17, 13, 0, 0, 0, 0], 6);
+    expect(r.totalRolls).toBe(30);
+    expect(r.assessment).not.toBe('insufficient-data');
+  });
+  it('D10: label 0 maps to the last count slot', () => {
+    expect(countIndexForLabel(0, 10)).toBe(9);
+    expect(countIndexForLabel(3, 10)).toBe(2);
+    expect(countIndexForLabel(6, 6)).toBe(5);
   });
 });
