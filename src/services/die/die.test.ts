@@ -3,7 +3,7 @@ import { DICE_TYPES, type DiceType, type FairnessResult } from '../../types/dice
 import { fairnessResult } from '../statistics';
 import { deviationColor, NEUTRAL_HEX } from './colors';
 import { getDieGeometry, oppositeSlot } from './geometry';
-import { D20_CLOCKWISE, D10_BY_SLOT, defaultLayout, dieLabels, handedness, isValidLayout, neighbourSlotsCCW, oppositePairsHold, swapLabels } from './layout';
+import { D12_CLOCKWISE, D20_CLOCKWISE, D10_BY_SLOT, defaultLayout, dieLabels, handedness, isValidLayout, neighbourSlotsCCW, oppositePairsHold, swapLabels } from './layout';
 import { estimateWeight, shouldShowArrow } from './weightDirection';
 import { cross, dot, length, normalize, scale, sub } from './vec';
 
@@ -251,5 +251,34 @@ describe('D10 layout copied from a real die', () => {
     const odds = rings.find((r) => r[0] % 2 === 1)!;
     expect(sameCycle(evens, [2, 6, 4, 0, 8])).toBe(true);
     expect(sameCycle(odds, [1, 9, 5, 3, 7])).toBe(true);
+  });
+});
+
+describe('D12 layout copied from a real die', () => {
+  const layout = defaultLayout(12);
+  const g = getDieGeometry(12);
+  const slotOf = (label: number) => layout.indexOf(label);
+
+  it('is a valid permutation with opposite faces summing to 13', () => {
+    expect(isValidLayout(12, layout)).toBe(true);
+    expect(oppositePairsHold(12, layout)).toBe(true);
+  });
+
+  it.each(Array.from({ length: 12 }, (_, i) => i + 1))('face %i has the clockwise neighbours derived from the photos', (label) => {
+    const cw = [...neighbourSlotsCCW(g, slotOf(label)).map((s) => layout[s])].reverse();
+    const want = D12_CLOCKWISE[label];
+    const rotations = want.map((_, k) => want.map((_, i) => cw[(i + k) % want.length]));
+    expect(rotations).toContainEqual(want);
+  });
+
+  it('matches vertices read directly from the photos (clockwise triples)', () => {
+    // Each triple is three faces meeting at one corner, listed clockwise seen from outside.
+    const photos = [[1, 3, 2], [1, 6, 5], [1, 2, 4], [12, 10, 8], [12, 9, 11], [12, 11, 10], [2, 8, 4], [2, 7, 8], [12, 8, 7], [12, 7, 9]];
+    for (const [a, b, c] of photos) {
+      const [sa, sb, sc] = [slotOf(a), slotOf(b), slotOf(c)];
+      const shared = g.faces[sa].filter((v) => g.faces[sb].includes(v) && g.faces[sc].includes(v));
+      expect(shared).toHaveLength(1); // the three faces really meet at a corner
+      expect(handedness(12, sa, sb, sc)).toBeLessThan(0); // clockwise from outside
+    }
   });
 });

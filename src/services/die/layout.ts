@@ -23,6 +23,7 @@ export const ADJACENCY_VERIFIED: Record<DiceType, boolean> = {
 /** Dice whose default layout was copied from a real die (rather than just the opposite-pair rule). */
 export const LAYOUT_SOURCE: Partial<Record<DiceType, string>> = {
   10: 'a real D10 (blue, gold numbers)',
+  12: 'a real D12 (blue, gold numbers)',
   20: 'a real D20 (blue, gold numbers)',
 };
 
@@ -49,6 +50,17 @@ export const D20_CLOCKWISE: Record<number, [number, number, number]> = {
   16: [3, 8, 6], 17: [7, 10, 3], 18: [4, 2, 5], 19: [3, 9, 1], 20: [2, 14, 8],
 };
 
+/**
+ * Clockwise neighbour cycles, seen from outside, read off seven photos of a real D12 (opposite
+ * faces sum to 13). Exactly one labelling (with chirality) fits all photographed vertices; it is
+ * robust to dropping any single photographed vertex. See docs/dice-layouts.md.
+ */
+export const D12_CLOCKWISE: Record<number, number[]> = {
+  1: [3, 2, 4, 6, 5], 2: [7, 8, 4, 1, 3], 3: [5, 9, 7, 2, 1], 4: [2, 8, 10, 6, 1],
+  5: [1, 6, 11, 9, 3], 6: [4, 10, 11, 5, 1], 7: [3, 9, 12, 8, 2], 8: [2, 7, 12, 10, 4],
+  9: [5, 11, 12, 7, 3], 10: [4, 8, 12, 11, 6], 11: [6, 10, 12, 9, 5], 12: [7, 9, 11, 10, 8],
+};
+
 /** Neighbouring slots of a face slot, counter-clockwise as seen from outside (one per polygon edge). */
 export function neighbourSlotsCCW(g: DieGeometry, slot: number): number[] {
   const f = g.faces[slot];
@@ -59,7 +71,7 @@ export function neighbourSlotsCCW(g: DieGeometry, slot: number): number[] {
 }
 
 /**
- * Build a layout from clockwise neighbour triples (triangular faces only). Label `start` goes on
+ * Build a layout from clockwise neighbour cycles (D12 pentagons, D20 triangles). Label `start` goes on
  * slot 0; the rest follows by propagating the rotation order. Any rotation of the start is a
  * symmetry of the die, so the result is unique up to rotation.
  */
@@ -104,6 +116,7 @@ export function defaultLayout(sides: DiceType): Layout {
   if (sides === 4) return labels;
   if (sides === 6) return [1, 6, 2, 5, 3, 4]; // slots: +x, -x, +y, -y, +z, -z
   if (sides === 10) return [...D10_BY_SLOT];
+  if (sides === 12) return layoutFromClockwise(12, D12_CLOCKWISE, 12);
   if (sides === 20) return layoutFromClockwise(20, D20_CLOCKWISE, 20);
   const layout: Layout = new Array(sides).fill(-1);
   let k = 0;
