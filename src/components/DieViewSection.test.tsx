@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { DieViewSection } from './DieViewSection';
@@ -25,17 +25,20 @@ describe('DieViewSection', () => {
   });
 
   it('flags the default layout on dice whose neighbours are unverified, not on the D6', () => {
-    const { unmount } = setup(12, []);
+    const { unmount } = setup(8, []);
     expect(screen.getByText(/default layout — edit to match your die/i)).toBeInTheDocument();
     unmount();
     setup(6, []);
     expect(screen.getByText(/standard d6 layout/i)).toBeInTheDocument();
   });
 
-  it('says the D20 and D10 defaults were copied from real dice', () => {
+  it('says the D20, D12 and D10 defaults were copied from real dice', () => {
     const { unmount } = setup(20, []);
     expect(screen.getByText(/default layout copied from a real d20/i)).toBeInTheDocument();
     unmount();
+    setup(12, []);
+    expect(screen.getByText(/default layout copied from a real d12/i)).toBeInTheDocument();
+    cleanup();
     setup(10, []);
     expect(screen.getByText(/default layout copied from a real d10/i)).toBeInTheDocument();
   });
