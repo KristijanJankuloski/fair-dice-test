@@ -22,8 +22,20 @@ export const ADJACENCY_VERIFIED: Record<DiceType, boolean> = {
 
 /** Dice whose default layout was copied from a real die (rather than just the opposite-pair rule). */
 export const LAYOUT_SOURCE: Partial<Record<DiceType, string>> = {
+  10: 'a real D10 (blue, gold numbers)',
   20: 'a real D20 (blue, gold numbers)',
 };
+
+/**
+ * D10 read off photos of a real die. Slots 0-4 are the upper kites in counter-clockwise order seen
+ * from above the top apex (evens), slots 5-9 the lower kites in counter-clockwise order seen from
+ * above, i.e. clockwise seen from below the bottom apex (odds). Seen from outside:
+ *   evens around their apex, clockwise: 2, 6, 4, 0, 8
+ *   odds around theirs, clockwise:      1, 9, 5, 3, 7
+ * Opposite faces sum to 9. Handedness is cross-checked: the odd ring, read independently from a
+ * photo, matches the one implied by the even ring plus the opposite-sum rule.
+ */
+export const D10_BY_SLOT: Layout = [8, 0, 4, 6, 2, 3, 7, 1, 9, 5];
 
 /**
  * Clockwise neighbour triples, seen from outside, read off photos of a real D20 (opposite faces
@@ -91,6 +103,7 @@ export function defaultLayout(sides: DiceType): Layout {
   const labels = dieLabels(sides);
   if (sides === 4) return labels;
   if (sides === 6) return [1, 6, 2, 5, 3, 4]; // slots: +x, -x, +y, -y, +z, -z
+  if (sides === 10) return [...D10_BY_SLOT];
   if (sides === 20) return layoutFromClockwise(20, D20_CLOCKWISE, 20);
   const layout: Layout = new Array(sides).fill(-1);
   let k = 0;

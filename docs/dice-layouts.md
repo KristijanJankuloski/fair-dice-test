@@ -7,7 +7,7 @@ What is verified and what is not. Source for the verified rules: Wikipedia, "Dic
 | D4 | Result is the vertex pointing up; no opposite faces | — |
 | D6 | Opposite faces sum to 7; Western dice are right-handed (1, 2, 3 run counter-clockwise around a vertex) | Left-handed dice exist (e.g. many Chinese dice); use the editor |
 | D8 | Opposite faces usually sum to 9 | Which faces touch |
-| D10 | Numbered 0–9; opposite faces sum to 9 | Which faces touch |
+| D10 | Numbered 0–9; opposite faces sum to 9. **Full layout copied from the user's blue D10**, see below | Other makers' D10s may differ; use the editor |
 | D12 | Opposite faces usually sum to 13 | Which faces touch |
 | D20 | Opposite faces sum to 21. **Full layout copied from the user's blue D20** (gold numbers), see below | Other makers' D20s may differ; use the editor |
 
@@ -22,3 +22,14 @@ Nine photos of one blue D20 gave these directly readable facts: 20 touches 2, 14
 One glyph was initially read as 9 (face 16's neighbour) and made the search impossible; the dotted glyph is a 6 (dots mark 6 and 9), and with 6 the solution is unique.
 
 The user has two D20 sets that differ; this is one of them. The editor covers the other.
+
+## D10: read from photos
+
+Three photos of one blue D10 (gold numbers). Looking down on each pointed apex from outside, clockwise:
+
+- evens: 2, 6, 4, 0, 8
+- odds: 1, 9, 5, 3, 7
+
+Evens sit around one apex and odds around the other, and opposite faces sum to 9 (0-9, 2-7, 4-5, 6-3, 8-1), which is consistent with both rings. The odd ring was read from a separate photo; the one implied by the even ring plus the opposite-sum rule matches it, so the handedness is cross-checked, not assumed. The dotted glyphs are 6 and 9 (one of each, one per cone). The layout is stored as `D10_BY_SLOT` in `src/services/die/layout.ts` and tested against the geometry.
+
+Side photo check (not used to build the layout): in the resting photo 0 sits among 8, 3 and 7, and 3 touches 8 and 7. In the layout 0 touches 8, 3, 7, 4 and 3 touches 7, 0, 8, 5, which agrees.

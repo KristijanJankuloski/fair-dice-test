@@ -3,9 +3,9 @@ import { DICE_TYPES, type DiceType, type FairnessResult } from '../../types/dice
 import { fairnessResult } from '../statistics';
 import { deviationColor, NEUTRAL_HEX } from './colors';
 import { getDieGeometry, oppositeSlot } from './geometry';
-import { D20_CLOCKWISE, defaultLayout, dieLabels, handedness, isValidLayout, neighbourSlotsCCW, oppositePairsHold, swapLabels } from './layout';
+import { D20_CLOCKWISE, D10_BY_SLOT, defaultLayout, dieLabels, handedness, isValidLayout, neighbourSlotsCCW, oppositePairsHold, swapLabels } from './layout';
 import { estimateWeight, shouldShowArrow } from './weightDirection';
-import { dot, length, sub } from './vec';
+import { cross, dot, length, normalize, scale, sub } from './vec';
 
 describe('geometry', () => {
   it.each(DICE_TYPES)('D%i has one slot per side', (s) => {
@@ -209,5 +209,47 @@ describe('D20 layout copied from a real die', () => {
     expect([19, 7, 13].every((n) => near(1, n))).toBe(true);
     expect([12, 8, 17].every((n) => near(10, n))).toBe(true);
     expect([8, 6, 3].every((n) => near(16, n))).toBe(true);
+  });
+});
+
+describe('D10 layout copied from a real die', () => {
+  const layout = defaultLayout(10);
+  const g = getDieGeometry(10);
+
+  /** Labels of the faces meeting at an apex vertex, clockwise as seen from outside (above the apex). */
+  const clockwiseAround = (vertex: number): number[] => {
+    const axis = normalize(g.vertices[vertex]);
+    const slots = g.faces.map((f, s) => (f.includes(vertex) ? s : -1)).filter((s) => s >= 0);
+    const ref: [number, number, number] = Math.abs(axis[2]) > 0.9 ? [1, 0, 0] : [0, 0, 1];
+    const u = normalize(sub(ref, scale(axis, dot(ref, axis))));
+    const w = cross(axis, u);
+    const angle = (s: number) => {
+      const d = g.slotDirections[s];
+      return Math.atan2(dot(d, w), dot(d, u));
+    };
+    // increasing angle about `axis` is counter-clockwise seen from outside, so reverse it
+    return slots.sort((a, b) => angle(b) - angle(a)).map((s) => layout[s]);
+  };
+  const sameCycle = (got: number[], want: number[]) =>
+    got.some((_, k) => got.every((v, i) => v === want[(i + k) % want.length]));
+
+  it('is a valid 0-9 permutation with opposite faces summing to 9', () => {
+    expect(layout).toEqual(D10_BY_SLOT);
+    expect(isValidLayout(10, layout)).toBe(true);
+    expect(oppositePairsHold(10, layout)).toBe(true);
+  });
+
+  it('evens form one cone and odds the other', () => {
+    const top = clockwiseAround(0), bottom = clockwiseAround(1);
+    expect(top.every((n) => n % 2 === 0) || top.every((n) => n % 2 === 1)).toBe(true);
+    expect(bottom.every((n) => n % 2 === 0) || bottom.every((n) => n % 2 === 1)).toBe(true);
+  });
+
+  it('matches the photographed clockwise rings: evens 2,6,4,0,8 and odds 1,9,5,3,7', () => {
+    const rings = [clockwiseAround(0), clockwiseAround(1)];
+    const evens = rings.find((r) => r[0] % 2 === 0)!;
+    const odds = rings.find((r) => r[0] % 2 === 1)!;
+    expect(sameCycle(evens, [2, 6, 4, 0, 8])).toBe(true);
+    expect(sameCycle(odds, [1, 9, 5, 3, 7])).toBe(true);
   });
 });
