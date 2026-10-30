@@ -22,6 +22,7 @@ export const ADJACENCY_VERIFIED: Record<DiceType, boolean> = {
 
 /** Dice whose default layout was copied from a real die (rather than just the opposite-pair rule). */
 export const LAYOUT_SOURCE: Partial<Record<DiceType, string>> = {
+  8: 'a real D8 (as described by its owner)',
   10: 'a real D10 (blue, gold numbers)',
   12: 'a real D12 (blue, gold numbers)',
   20: 'a real D20 (blue, gold numbers)',
@@ -60,6 +61,32 @@ export const D12_CLOCKWISE: Record<number, number[]> = {
   5: [1, 6, 11, 9, 3], 6: [4, 10, 11, 5, 1], 7: [3, 9, 12, 8, 2], 8: [2, 7, 12, 10, 4],
   9: [5, 11, 12, 7, 3], 10: [4, 8, 12, 11, 6], 11: [6, 10, 12, 9, 5], 12: [7, 9, 11, 10, 8],
 };
+
+/**
+ * D8 as described by the owner. Around the top apex, clockwise seen from above: 1, 7, 5, 3.
+ * Around the bottom apex, clockwise seen from below: 8, 6, 4, 2. Across each equator edge sits the
+ * face of the other ring that touches it: 8 touches 6, 2 and 5; 1 touches 4, 7 and 3. Opposite
+ * faces sum to 9 (1-8, 7-2, 5-4, 3-6), which follows from the description.
+ */
+export const D8_TOP_RING_CLOCKWISE = [1, 7, 5, 3];
+/** Bottom face across the equator edge from each top-ring face, in the same order as the top ring. */
+export const D8_ACROSS_EQUATOR = [4, 6, 8, 2];
+
+function d8Layout(): Layout {
+  const g = getDieGeometry(8);
+  const apex = g.vertices.findIndex((v) => v[2] > 0.99); // top apex (+z)
+  const top = g.faces.map((f, s) => (f.includes(apex) ? s : -1)).filter((s) => s >= 0);
+  // Clockwise seen from above the apex = decreasing angle about +z.
+  const angle = (s: number) => Math.atan2(g.slotDirections[s][1], g.slotDirections[s][0]);
+  top.sort((a, b) => angle(b) - angle(a));
+  const layout: Layout = new Array(8).fill(-1);
+  top.forEach((slot, k) => {
+    layout[slot] = D8_TOP_RING_CLOCKWISE[k];
+    const across = neighbourSlotsCCW(g, slot).find((n) => !g.faces[n].includes(apex))!;
+    layout[across] = D8_ACROSS_EQUATOR[k];
+  });
+  return layout;
+}
 
 /** Neighbouring slots of a face slot, counter-clockwise as seen from outside (one per polygon edge). */
 export function neighbourSlotsCCW(g: DieGeometry, slot: number): number[] {
@@ -115,6 +142,7 @@ export function defaultLayout(sides: DiceType): Layout {
   const labels = dieLabels(sides);
   if (sides === 4) return labels;
   if (sides === 6) return [1, 6, 2, 5, 3, 4]; // slots: +x, -x, +y, -y, +z, -z
+  if (sides === 8) return d8Layout();
   if (sides === 10) return [...D10_BY_SLOT];
   if (sides === 12) return layoutFromClockwise(12, D12_CLOCKWISE, 12);
   if (sides === 20) return layoutFromClockwise(20, D20_CLOCKWISE, 20);
