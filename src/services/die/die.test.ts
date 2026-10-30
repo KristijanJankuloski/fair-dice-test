@@ -282,3 +282,38 @@ describe('D12 layout copied from a real die', () => {
     }
   });
 });
+
+describe('D8 layout as described by its owner', () => {
+  const layout = defaultLayout(8);
+  const g = getDieGeometry(8);
+  const slotOf = (label: number) => layout.indexOf(label);
+  const touches = (a: number, b: number) => neighbourSlotsCCW(g, slotOf(a)).includes(slotOf(b));
+  const ringAround = (vertex: number, clockwiseSign: 1 | -1): number[] => {
+    // faces at the apex, clockwise seen from outside (above that apex)
+    const z = g.vertices[vertex][2] > 0 ? 1 : -1;
+    const slots = g.faces.map((f, s) => (f.includes(vertex) ? s : -1)).filter((s) => s >= 0);
+    const angle = (s: number) => Math.atan2(g.slotDirections[s][1], g.slotDirections[s][0]);
+    // seen from above +z clockwise = decreasing angle; seen from above -z the sense flips
+    return slots.sort((a, b) => clockwiseSign * z * (angle(b) - angle(a))).map((s) => layout[s]);
+  };
+  const sameCycle = (got: number[], want: number[]) =>
+    got.some((_, k) => got.every((v, i) => v === want[(i + k) % want.length]));
+
+  it('is a valid permutation with opposite faces summing to 9', () => {
+    expect(isValidLayout(8, layout)).toBe(true);
+    expect(oppositePairsHold(8, layout)).toBe(true);
+  });
+
+  it('rings read clockwise from outside: 1, 7, 5, 3 and 8, 6, 4, 2', () => {
+    const top = g.vertices.findIndex((v) => v[2] > 0.99);
+    const bottom = g.vertices.findIndex((v) => v[2] < -0.99);
+    expect(sameCycle(ringAround(top, 1), [1, 7, 5, 3])).toBe(true);
+    expect(sameCycle(ringAround(bottom, 1), [8, 6, 4, 2])).toBe(true);
+  });
+
+  it('8 touches 6, 2 and 5; 1 touches 4, 7 and 3 (and nothing else by an edge)', () => {
+    expect([6, 2, 5].every((n) => touches(8, n))).toBe(true);
+    expect([4, 7, 3].every((n) => touches(1, n))).toBe(true);
+    expect(neighbourSlotsCCW(g, slotOf(8))).toHaveLength(3);
+  });
+});

@@ -6,7 +6,7 @@ What is verified and what is not. Source for the verified rules: Wikipedia, "Dic
 |-----|----------|--------------|
 | D4 | Result is the vertex pointing up; no opposite faces | — |
 | D6 | Opposite faces sum to 7; Western dice are right-handed (1, 2, 3 run counter-clockwise around a vertex) | Left-handed dice exist (e.g. many Chinese dice); use the editor |
-| D8 | Opposite faces usually sum to 9 | Which faces touch |
+| D8 | Opposite faces usually sum to 9. **Full layout as described by the user's D8**, see below | Other makers' D8s may differ; use the editor |
 | D10 | Numbered 0–9; opposite faces sum to 9. **Full layout copied from the user's blue D10**, see below | Other makers' D10s may differ; use the editor |
 | D12 | Opposite faces usually sum to 13. **Full layout copied from the user's blue D12**, see below | Other makers' D12s may differ; use the editor |
 | D20 | Opposite faces sum to 21. **Full layout copied from the user's blue D20** (gold numbers), see below | Other makers' D20s may differ; use the editor |
@@ -43,3 +43,9 @@ The mirrored winding (all clockwise readings reversed) yields the mirror-image l
 Stored as `D12_CLOCKWISE` in `src/services/die/layout.ts` and tested against the geometry (every face's clockwise neighbours, plus the photographed corners).
 
 Handy property of this die: 1 touches 2-6 and 12 touches 7-11 (the classic "polar" arrangement).
+
+## D8: described by the owner (not from photos)
+
+Described in text: around one apex the faces read 1, 7, 5, 3 clockwise; around the other apex 8, 6, 4, 2 clockwise; 8 touches 6, 2 and 5; 1 touches 4, 7 and 3. The layout is built from the top ring plus the "across the equator" facts only (`D8_TOP_RING_CLOCKWISE`, `D8_ACROSS_EQUATOR`), and the bottom ring is then *derived* from the geometry. A test confirms the derived bottom ring reads 8, 6, 4, 2 clockwise from outside, and that opposite faces sum to 9 (1-8, 7-2, 5-4, 3-6). So the description is internally consistent only if "clockwise" means clockwise looking at that apex from outside on both rings, which is how it was applied. An octahedron has so few arrangements that a consistent description pins the layout down (up to rotation) except for mirror-image, which the clockwise reading fixes.
+
+Every die now has an owner-supplied default. Different makers number D8–D20 differently, so the editor stays.
